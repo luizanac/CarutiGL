@@ -24,7 +24,7 @@ Result<GLFWwindow *> configureGlfw(int width, int height) {
     return {window, Success};
 }
 
-EStatus configureGlad() {
+EResultStatus configureGlad() {
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return Fail;
@@ -54,7 +54,7 @@ int main() {
     if (glfwConfigResult.getStatus() == Fail)
         return Fail;
 
-    EStatus gladConfigResult = configureGlad();
+    EResultStatus gladConfigResult = configureGlad();
     if (gladConfigResult == Fail)
         return Fail;
 
@@ -62,7 +62,11 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
-    Shader vertexShader("VertexShader.glsl");
+    Result<Shader> vertexShaderResult = Shader("VertexShader.glsl").load();
+    if (vertexShaderResult.getStatus() == Fail) {
+        std::cout << "Failed to load vertex shader" << std::endl;
+        return Fail;
+    }
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);

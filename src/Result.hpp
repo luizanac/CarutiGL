@@ -5,7 +5,7 @@
 #ifndef CARUTIGL_RESULT_HPP
 #define CARUTIGL_RESULT_HPP
 
-enum EStatus {
+enum EResultStatus {
     Success, Fail
 };
 
@@ -13,21 +13,21 @@ template<typename T>
 class Result {
 private:
     T _data;
-    EStatus _status;
+    EResultStatus _status;
 
 public:
-    explicit Result(EStatus status) : _status(status) {
+    explicit Result(EResultStatus status) : _status(status) {
         _data = nullptr;
     }
 
-    Result(T data, EStatus status) : _data(data), _status(status) {
+    Result(T data, EResultStatus status) : _data(data), _status(status) {
     }
 
     T getData() {
         return _data;
     }
 
-    [[nodiscard]] EStatus getStatus() const {
+    [[nodiscard]] EResultStatus getStatus() const {
         return _status;
     }
 };
