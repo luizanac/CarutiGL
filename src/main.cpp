@@ -87,6 +87,9 @@ int main() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
+    float lastBorderXOffset = -1;
+    float xOffset = lastBorderXOffset;
+
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -94,6 +97,19 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
+
+        if (lastBorderXOffset == 1)
+            xOffset -= 0.01;
+        else
+            xOffset += 0.01;
+
+        if (xOffset >= 1)
+            lastBorderXOffset = 1;
+        else if (xOffset <= -1)
+            lastBorderXOffset = -1;
+
+        shader.setFloat("xOffset", xOffset);
+
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
