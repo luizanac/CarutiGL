@@ -5,30 +5,29 @@
 #include "Result.hpp"
 #include "glad/glad.h"
 
-#define SHADER_DIRECTORY "Resources/Shaders/"
-
 class Shader {
 private:
-    unsigned int _id;
-    unsigned int _program = 0;
-    std::string _name;
-    char *_source;
 
-    Result<std::string> load();
+private:
 
-    Result<std::string> compile();
-
+    static void checkCompileErrors(unsigned int shader, const std::string& type);
 public:
-    explicit Shader(std::string &&name, GLenum &&type);
+    unsigned int ProgramId;
 
-    [[nodiscard]] unsigned int getId() const;
+    Shader(const char *vertexPath, const char *fragmentPath);
 
-    void attachToProgram(unsigned int program);
+    void use() const;
+
+    void setBool(const std::string &name, bool value) const;
+
+    void setInt(const std::string &name, int value) const;
+
+    void setFloat(const std::string &name, float value) const;
 
     ~Shader() {
-        delete _source;
-        glDeleteShader(_id);
+        glDeleteProgram(ProgramId);
     }
+
 };
 
 #endif //CARUTIGL_SHADER_HPP

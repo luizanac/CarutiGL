@@ -1,6 +1,6 @@
 #include <iostream>
-#include <fstream>
 #include <glad/glad.h>
+#include <valarray>
 #include "GLFW/glfw3.h"
 #include "Result.hpp"
 #include "Shader.hpp"
@@ -33,20 +33,6 @@ EResultStatus configureGlad() {
     return Success;
 }
 
-Result<unsigned int> createProgram() {
-    unsigned int program = glCreateProgram();
-    int failed;
-    char infoLog[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &failed);
-    if (failed) {
-        glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cout << "Failed to create program: " << infoLog << std::endl;
-        return {program, Fail};
-    }
-
-    return {program, Success};
-}
-
 void frameBufferSizeCallback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -57,9 +43,10 @@ void processInput(GLFWwindow *window) {
 }
 
 float vertices[] = {
-        -0.5f, -0.5f, 0.0f,  // left
-        0.5f, -0.5f, 0.0f,  // right
-        0.0f, 0.5f, 0.0f,  // top
+        // positions                            // colors
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // bottom left
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // top
 };
 
 int main() {
@@ -75,19 +62,8 @@ int main() {
     GLFWwindow *window = glfwConfigResult.getData();
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
-    Shader vertexShader("VertexShader.vert", GL_VERTEX_SHADER);
-    Shader fragmentShader("FragmentShader.frag", GL_FRAGMENT_SHADER);
-
-    auto programResult = createProgram();
-    if (programResult.getStatus() == Fail)
-        return Fail;
-
-    auto program = programResult.getData();
-
-    //Attach shaders to program and link them
-    vertexShader.attachToProgram(program);
-    fragmentShader.attachToProgram(program);
-    glLinkProgram(program);
+    Shader shader("Resources/Shaders/VertexShader.vert",
+                  "Resources/Shaders/FragmentShader.frag");
 
     //Create a vertex buffer object and vertex array object
     unsigned int vbo, vao;
@@ -98,8 +74,18 @@ int main() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+
+    //Set the vec3 in VertexShader at position 0
+    //Set the size of vertex attrib that is 3
+    //Set the type of the data which is GL_FLOAT
+    //Set if need to normalize the data
+    //set the STRIDE of 3(sum of values) * size of each element
+    //The last is the offset where the position data begins in the buffer
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+    //Enable location vec3 in VertexShader to be used
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -107,7 +93,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(program);
+        shader.use();
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -117,7 +103,6 @@ int main() {
 
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteProgram(program);
     glfwTerminate();
     return Success;
 }
