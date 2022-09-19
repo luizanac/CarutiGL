@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(CarutiGL)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 ##Find packages
 find_package(OpenGL REQUIRED)
@@ -21,14 +21,14 @@ add_dependencies(CarutiGL copy_shaders)
 #Include directories
 target_include_directories(CarutiGL PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/third/glfw/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/third/glad/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/third/glad/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third/fmt/include
+        )
 
 #Link libraries
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    # Windows
-
-    target_link_libraries(CarutiGL ${CMAKE_SOURCE_DIR}/third/glfw/lib/libglfw3.a)
-
-ENDIF ()
+target_link_libraries(CarutiGL
+        ${CMAKE_SOURCE_DIR}/third/glfw/lib/libglfw3.a
+        ${CMAKE_SOURCE_DIR}/third/fmt/lib/libfmtd.a
+        )
 
 

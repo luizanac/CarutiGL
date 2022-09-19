@@ -23,7 +23,7 @@ public:
     Result(T data, EResultStatus status) : _data(data), _status(status) {
     }
 
-    T getData() {
+    T &getData() {
         return _data;
     }
 

@@ -3,19 +3,32 @@
 
 #include <string>
 #include "Result.hpp"
+#include "glad/glad.h"
 
 #define SHADER_DIRECTORY "Resources/Shaders/"
 
 class Shader {
 private:
+    unsigned int _id;
+    unsigned int _program = 0;
     std::string _name;
-    std::string _source;
+    char *_source;
+
+    Result<std::string> load();
+
+    Result<std::string> compile();
+
 public:
-    explicit Shader(std::string &&name);
+    explicit Shader(std::string &&name, GLenum &&type);
 
-    Result<Shader> load();
+    [[nodiscard]] unsigned int getId() const;
 
-    [[nodiscard]] const std::string &getSource() const;
+    void attachToProgram(unsigned int program);
+
+    ~Shader() {
+        delete _source;
+        glDeleteShader(_id);
+    }
 };
 
 #endif //CARUTIGL_SHADER_HPP
