@@ -26,6 +26,7 @@ target_include_directories(CarutiGL PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/third/glad/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third/fmt/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third/stb/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third/glm/include
         )
 
 #Link libraries
