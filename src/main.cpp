@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 #include "Result.hpp"
 #include "Shader.hpp"
+#include "stb_image.h"
 
 Result<GLFWwindow *> configureGlfw(int width, int height) {
     glfwInit();
@@ -37,16 +38,33 @@ void frameBufferSizeCallback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+float mixValue = 0.2f;
+
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_UP))
+        if (mixValue <= 1)
+            mixValue += 0.01;
+
+    if (glfwGetKey(window, GLFW_KEY_DOWN))
+        if (mixValue >= 0)
+            mixValue -= 0.01;
 }
 
+
 float vertices[] = {
-        // positions                            // colors
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // top
+        // positions            // colors               // texture coords
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
+};
+
+unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
 };
 
 int main() {
@@ -62,18 +80,70 @@ int main() {
     GLFWwindow *window = glfwConfigResult.getData();
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
+
+    unsigned int containerTex, smileTex;
+    stbi_set_flip_vertically_on_load(true);
+
+    glGenTextures(1, &containerTex);
+    glBindTexture(GL_TEXTURE_2D, containerTex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int texWidth, texHeight, nrChannels;
+    unsigned char *containerTexBuffer = stbi_load(
+            "Resources/Textures/container.jpg",
+            &texWidth, &texHeight,
+            &nrChannels, 0);
+
+    if (containerTexBuffer) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, containerTexBuffer);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(containerTexBuffer);
+
+    glGenTextures(1, &smileTex);
+    glBindTexture(GL_TEXTURE_2D, smileTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int smileTexWidth, smileTexHeight, smileNrChannels;
+    unsigned char *smileTexBuffer = stbi_load(
+            "Resources/Textures/awesomeface.png",
+            &smileTexWidth, &smileTexHeight,
+            &smileNrChannels, 0);
+
+    if (smileTexBuffer) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, smileTexWidth, smileTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     smileTexBuffer);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(smileTexBuffer);
+
     Shader shader("Resources/Shaders/VertexShader.vert",
                   "Resources/Shaders/FragmentShader.frag");
 
     //Create a vertex buffer object and vertex array object
-    unsigned int vbo, vao;
+    unsigned int vbo, vao, ebo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
 
     //Copy vertices array to a buffer for opengl use
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     //Set the vec3 in VertexShader at position 0
     //Set the size of vertex attrib that is 3
@@ -81,14 +151,18 @@ int main() {
     //Set if need to normalize the data
     //set the STRIDE of 3(sum of values) * size of each element
     //The last is the offset where the position data begins in the buffer
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
-    //Enable location vec3 in VertexShader to be used
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    float lastBorderXOffset = -1;
-    float xOffset = lastBorderXOffset;
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    shader.use();
+    shader.setInt("texture1", 0);
+    shader.setInt("texture2", 1);
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -96,22 +170,16 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, containerTex);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, smileTex);
+
+        shader.setFloat("uMixValue", mixValue);
+
         shader.use();
-
-        if (lastBorderXOffset == 1)
-            xOffset -= 0.01;
-        else
-            xOffset += 0.01;
-
-        if (xOffset >= 1)
-            lastBorderXOffset = 1;
-        else if (xOffset <= -1)
-            lastBorderXOffset = -1;
-
-        shader.setFloat("xOffset", xOffset);
-
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -119,6 +187,8 @@ int main() {
 
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
+
     glfwTerminate();
     return Success;
 }
