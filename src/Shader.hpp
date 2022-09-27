@@ -4,6 +4,8 @@
 #include <string>
 #include "Result.hpp"
 #include "glad/glad.h"
+#include  "glm/glm.hpp"
+#include "Texture.hpp"
 
 class Shader {
 private:
@@ -23,6 +25,9 @@ public:
     void setInt(const std::string &name, int value) const;
 
     void setFloat(const std::string &name, float value) const;
+    void setMat4(const std::string &name, glm::mat4 value) const;
+
+    void setTexture(const char *uName, const Texture &texture);
 
     ~Shader() {
         glDeleteProgram(ProgramId);

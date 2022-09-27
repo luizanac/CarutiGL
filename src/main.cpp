@@ -7,7 +7,8 @@
 #include "stb_image.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "Texture.hpp"
+#include "Cube.hpp"
 
 Result<GLFWwindow *> configureGlfw(int width, int height) {
     glfwInit();
@@ -41,37 +42,25 @@ void frameBufferSizeCallback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-float mixValue = 0.2f;
+float interpolatedAngle = 1;
+float targetAngle = 1;
+float rotationSpeed = 10;
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_UP))
-        if (mixValue <= 1)
-            mixValue += 0.01;
+        if (targetAngle == 1)
+            targetAngle = -1;
 
     if (glfwGetKey(window, GLFW_KEY_DOWN))
-        if (mixValue >= 0)
-            mixValue -= 0.01;
+        if (targetAngle == -1)
+            targetAngle = 1;
 }
 
-
-float vertices[] = {
-        // positions        // texture coords
-        0.5f, 0.5f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // bottom left
-        -0.5f, 0.5f, 0.0f,  0.0f, 1.0f    // top left
-};
-
-unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-};
-
 int main() {
-    const int width = 800, height = 600;
+    const int width = 1366, height = 768;
     Result<GLFWwindow *> glfwConfigResult = configureGlfw(width, height);
     if (glfwConfigResult.getStatus() == Fail)
         return Fail;
@@ -83,75 +72,25 @@ int main() {
     GLFWwindow *window = glfwConfigResult.getData();
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
+    Texture texContainer("Resources/Textures/container.jpg", GL_RGB);
+    Texture texSmile("Resources/Textures/awesomeface.png", GL_RGBA);
 
-    unsigned int containerTex, smileTex;
-    stbi_set_flip_vertically_on_load(true);
-
-    glGenTextures(1, &containerTex);
-    glBindTexture(GL_TEXTURE_2D, containerTex);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int texWidth, texHeight, nrChannels;
-    unsigned char *containerTexBuffer = stbi_load(
-            "Resources/Textures/container.jpg",
-            &texWidth, &texHeight,
-            &nrChannels, 0);
-
-    if (containerTexBuffer) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, containerTexBuffer);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(containerTexBuffer);
-
-    glGenTextures(1, &smileTex);
-    glBindTexture(GL_TEXTURE_2D, smileTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int smileTexWidth, smileTexHeight, smileNrChannels;
-    unsigned char *smileTexBuffer = stbi_load(
-            "Resources/Textures/awesomeface.png",
-            &smileTexWidth, &smileTexHeight,
-            &smileNrChannels, 0);
-
-    if (smileTexBuffer) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, smileTexWidth, smileTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     smileTexBuffer);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(smileTexBuffer);
-
-    Shader shader("Resources/Shaders/VertexShader.vert",
-                  "Resources/Shaders/FragmentShader.frag");
+    Shader shader("Resources/Shaders/VertexShader.vert", "Resources/Shaders/FragmentShader.frag");
 
     //Create a vertex buffer object and vertex array object
-    unsigned int vbo, vao, ebo;
-    glGenVertexArrays(1, &vao);
+    unsigned int vbo, vao;
     glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
+    glGenVertexArrays(1, &vao);
 
     //Copy vertices array to a buffer for opengl use
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Cube::vertices), Cube::vertices, GL_DYNAMIC_DRAW);
 
     //Set the vec3 in VertexShader at position 0
     //Set the size of vertex attrib that is 3
     //Set the type of the data which is GL_FLOAT
-    //Set if need to normalize the data
+    //Set need to normalize the data
     //set the STRIDE of 3(sum of values) * size of each element
     //The last is the offset where the position data begins in the buffer
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
@@ -161,41 +100,61 @@ int main() {
     glEnableVertexAttribArray(1);
 
     shader.use();
-    shader.setInt("texture1", 0);
-    shader.setInt("texture2", 1);
+
+    texContainer.activateAndBind(GL_TEXTURE0);
+    texSmile.activateAndBind(GL_TEXTURE1);
+
+    shader.setTexture("texture1", texContainer);
+    shader.setTexture("texture2", texSmile);
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
+        glEnable(GL_DEPTH_TEST);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, containerTex);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, smileTex);
-
-        shader.setFloat("uMixValue", mixValue);
-
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-        GLint transformLoc = glGetUniformLocation(shader.ProgramId, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        //glm::mat4 trans = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        shader.setMat4("transform", transform);
+
+        //Create coordinate system matrices glm::radians(-55.0f)
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(targetAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+        //model = glm::rotate(model, (float) glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+        //Translating the scene in the reverse direction of where we want to move
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - Cube::positions[3]);
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+        const float radius = 10.0f;
+        float camX = (float) sin(glfwGetTime()) * radius;
+        float camZ = (float) cos(glfwGetTime()) * radius;
+        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), Cube::positions[5], up);
+
+        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) width / height, 0.1f, 100.0f);
+
+        shader.setMat4("mode", model);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-        trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
-        trans = glm::scale(trans, sin(glm::vec3(1, 1, 1) * (float)glfwGetTime()));
-
-        transformLoc = glGetUniformLocation(shader.ProgramId, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        for (auto &cubePosition: Cube::positions) {
+            //Reset identity matrix
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePosition);
+            interpolatedAngle = std::lerp(interpolatedAngle, targetAngle, 0.0125f);
+            model = glm::rotate(model, glm::radians((float) glfwGetTime() * interpolatedAngle * rotationSpeed),
+                                glm::vec3(1.0f, 0.3f, 0.5f));
+            shader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -203,7 +162,6 @@ int main() {
 
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
 
     glfwTerminate();
     return Success;

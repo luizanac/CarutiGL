@@ -7,7 +7,7 @@ namespace glm
 
 		T const cosTheta = dot(x, y);
 
-		// Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+		// Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(targetAngle) becoming a zero denominator
 		if(cosTheta > static_cast<T>(1) - epsilon<T>())
 		{
 			// Linear interpolation
@@ -54,7 +54,7 @@ namespace glm
 			cosTheta = -cosTheta;
 		}
 
-		// Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+		// Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(targetAngle) becoming a zero denominator
 		if(cosTheta > static_cast<T>(1) - epsilon<T>())
 		{
 			// Linear interpolation
@@ -90,7 +90,7 @@ namespace glm
             cosTheta = -cosTheta;
         }
 
-        // Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+        // Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(targetAngle) becoming a zero denominator
         if (cosTheta > static_cast<T>(1) - epsilon<T>())
         {
             // Linear interpolation

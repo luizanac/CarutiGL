@@ -64,17 +64,17 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, Q> translate(
 		mat<4, 4, T, Q> const& m, vec<3, T, Q> const& v);
 
-	/// Builds a rotation 4 * 4 matrix created from an axis vector and an angle.
+	/// Builds a rotation 4 * 4 matrix created from an axis vector and an targetAngle.
 	///
 	/// @param m Input matrix multiplied by this rotation matrix.
-	/// @param angle Rotation angle expressed in radians.
+	/// @param angle Rotation targetAngle expressed in radians.
 	/// @param axis Rotation axis, recommended to be normalized.
 	///
 	/// @tparam T A floating-point scalar type
 	/// @tparam Q A value from qualifier enum
 	///
-	/// @see - rotate(mat<4, 4, T, Q> const& m, T angle, T x, T y, T z)
-	/// @see - rotate(T angle, vec<3, T, Q> const& v)
+	/// @see - rotate(mat<4, 4, T, Q> const& m, T targetAngle, T x, T y, T z)
+	/// @see - rotate(T targetAngle, vec<3, T, Q> const& v)
 	/// @see <a href="https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glRotate.xml">glRotate man page</a>
 	template<typename T, qualifier Q>
 	GLM_FUNC_DECL mat<4, 4, T, Q> rotate(
