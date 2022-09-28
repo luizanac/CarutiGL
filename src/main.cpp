@@ -9,6 +9,53 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Texture.hpp"
 #include "Cube.hpp"
+#include "Camera.hpp"
+
+const int ScreenWidth = 1366, ScreenHeight = 768;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = ScreenWidth / 2.0;
+float lastY = ScreenHeight / 2.0;
+bool firstMouse = true;
+
+float deltaTime = 0.0f; // Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
+
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.processKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.processKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.processKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.processKeyboard(RIGHT, deltaTime);
+}
+
+void mouseCallback(GLFWwindow *window, double xPosIn, double yPosIn) {
+    auto xPos = static_cast<float>(xPosIn);
+    auto yPos = static_cast<float>(yPosIn);
+
+    if (firstMouse) {
+        lastX = xPos;
+        lastY = yPos;
+        firstMouse = false;
+    }
+
+    float xOffset = xPos - lastX;
+    float yOffset = lastY - yPos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xPos;
+    lastY = yPos;
+    camera.processMouseMovement(xOffset, yOffset);
+}
+
+void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    camera.processMouseScroll(static_cast<float>(yOffset));
+}
 
 Result<GLFWwindow *> configureGlfw(int width, int height) {
     glfwInit();
@@ -42,26 +89,8 @@ void frameBufferSizeCallback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-float interpolatedAngle = 1;
-float targetAngle = 1;
-float rotationSpeed = 10;
-
-void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_UP))
-        if (targetAngle == 1)
-            targetAngle = -1;
-
-    if (glfwGetKey(window, GLFW_KEY_DOWN))
-        if (targetAngle == -1)
-            targetAngle = 1;
-}
-
 int main() {
-    const int width = 1366, height = 768;
-    Result<GLFWwindow *> glfwConfigResult = configureGlfw(width, height);
+    Result<GLFWwindow *> glfwConfigResult = configureGlfw(ScreenWidth, ScreenHeight);
     if (glfwConfigResult.getStatus() == Fail)
         return Fail;
 
@@ -71,6 +100,9 @@ int main() {
 
     GLFWwindow *window = glfwConfigResult.getData();
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetScrollCallback(window, scrollCallback);
 
     Texture texContainer("Resources/Textures/container.jpg", GL_RGB);
     Texture texSmile("Resources/Textures/awesomeface.png", GL_RGBA);
@@ -108,6 +140,10 @@ int main() {
     shader.setTexture("texture2", texSmile);
 
     while (!glfwWindowShouldClose(window)) {
+        auto currentFrame = (float) glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         processInput(window);
 
         glEnable(GL_DEPTH_TEST);
@@ -120,24 +156,14 @@ int main() {
         //glm::mat4 trans = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
         shader.setMat4("transform", transform);
 
-        //Create coordinate system matrices glm::radians(-55.0f)
-        glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(targetAngle), glm::vec3(1.0f, 0.0f, 0.0f));
-        //model = glm::rotate(model, (float) glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        //Create coordinate system matrices
+        glm::mat4 model = glm::rotate(model, (float) glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
         //Translating the scene in the reverse direction of where we want to move
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 view = camera.getViewMatrix();
 
-        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-        glm::vec3 cameraDirection = glm::normalize(cameraPos - Cube::positions[3]);
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-        const float radius = 10.0f;
-        float camX = (float) sin(glfwGetTime()) * radius;
-        float camZ = (float) cos(glfwGetTime()) * radius;
-        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), Cube::positions[5], up);
-
-        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) width / height, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.getFov()), (float) ScreenWidth / ScreenHeight, 0.1f,
+                                                100.0f);
 
         shader.setMat4("mode", model);
         shader.setMat4("view", view);
@@ -149,8 +175,7 @@ int main() {
             //Reset identity matrix
             model = glm::mat4(1.0f);
             model = glm::translate(model, cubePosition);
-            interpolatedAngle = std::lerp(interpolatedAngle, targetAngle, 0.0125f);
-            model = glm::rotate(model, glm::radians((float) glfwGetTime() * interpolatedAngle * rotationSpeed),
+            model = glm::rotate(model, glm::radians((float) glfwGetTime() * 20),
                                 glm::vec3(1.0f, 0.3f, 0.5f));
             shader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);

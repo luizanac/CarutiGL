@@ -2158,7 +2158,7 @@ template <typename Char> struct arg_ref {
   } val;
 };
 
-// Format specifiers with width and precision resolved at formatting rather
+// Format specifiers with ScreenWidth and precision resolved at formatting rather
 // than parsing time to allow re-using the same parsed specifiers with
 // different sets of arguments (precompilation of format strings).
 template <typename Char>
@@ -2204,7 +2204,7 @@ template <typename Char> class specs_setter {
 };
 
 // Format spec handler that saves references to arguments representing dynamic
-// width and precision to be resolved at formatting time.
+// ScreenWidth and precision to be resolved at formatting time.
 template <typename ParseContext>
 class dynamic_specs_handler
     : public specs_setter<typename ParseContext::char_type> {
