@@ -643,7 +643,7 @@ template <typename S> using char_t = typename detail::char_t_impl<S>::type;
   \rst
   Parsing context consisting of a format string range being parsed and an
   argument counter for automatic indexing.
-  You can use the ``format_parse_context`` type alias for ``char`` instead.
+  You can Use the ``format_parse_context`` type alias for ``char`` instead.
   \endrst
  */
 template <typename Char, typename ErrorHandler = detail::error_handler>
@@ -1423,7 +1423,7 @@ template <typename Context> struct arg_mapper {
     return val;
   }
 
-  // We use SFINAE instead of a const T* parameter to avoid conflicting with
+  // We Use SFINAE instead of a const T* parameter to avoid conflicting with
   // the C array overload.
   template <
       typename T,
@@ -2037,7 +2037,7 @@ template <typename Context> class basic_format_args {
 // between clang and gcc on ARM (#1919).
 using format_args = basic_format_args<format_context>;
 
-// We cannot use enum classes as bit fields because of a gcc bug, so we put them
+// We cannot Use enum classes as bit fields because of a gcc bug, so we put them
 // in namespaces instead (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61414).
 // Additionally, if an underlying type is specified, older gcc incorrectly warns
 // that the type is too small. Both bugs are fixed in gcc 9.3.
@@ -2904,7 +2904,7 @@ template <typename Char, typename ErrorHandler, typename... Args>
 class format_string_checker {
  private:
   // In the future basic_format_parse_context will replace compile_parse_context
-  // here and will use is_constant_evaluated and downcasting to access the data
+  // here and will Use is_constant_evaluated and downcasting to access the data
   // needed for compile-time checks: https://godbolt.org/z/GvWzcTjh1.
   using parse_context_type = compile_parse_context<Char, ErrorHandler>;
   static constexpr int num_args = sizeof...(Args);
@@ -2960,7 +2960,7 @@ template <typename..., typename S, FMT_ENABLE_IF(!is_compile_string<S>::value)>
 FMT_INLINE void check_format_string(const S&) {
 #ifdef FMT_ENFORCE_COMPILE_STRING
   static_assert(is_compile_string<S>::value,
-                "FMT_ENFORCE_COMPILE_STRING requires all format strings to use "
+                "FMT_ENFORCE_COMPILE_STRING requires all format strings to Use "
                 "FMT_STRING.");
 #endif
 }
