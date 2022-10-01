@@ -9,8 +9,8 @@ namespace Caruti {
     Texture::Texture(const char *texPath, GLenum channelFormat) {
         stbi_set_flip_vertically_on_load(true);
 
-        glGenTextures(1, &_id);
-        glBindTexture(GL_TEXTURE_2D, _id);
+        glGenTextures(1, &m_Id);
+        glBindTexture(GL_TEXTURE_2D, m_Id);
 
         //TODO: Create a function to configure texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -20,11 +20,11 @@ namespace Caruti {
 
         unsigned char *buffer = stbi_load(
                 texPath,
-                &_width, &_height,
-                &_nrChannels, 0);
+                &m_Width, &m_Height,
+                &m_NrChannels, 0);
 
         if (buffer) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, channelFormat, GL_UNSIGNED_BYTE, buffer);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, channelFormat, GL_UNSIGNED_BYTE, buffer);
             glGenerateMipmap(GL_TEXTURE_2D);
         } else {
             std::cout << fmt::format("Failed to load texture: {}", texPath) << std::endl;
@@ -33,30 +33,30 @@ namespace Caruti {
     }
 
     void Texture::ActivateAndBind(GLenum texIndex) {
-        _index = texIndex;
-        glActiveTexture(_index);
-        glBindTexture(GL_TEXTURE_2D, _id);
+        m_Index = texIndex;
+        glActiveTexture(m_Index);
+        glBindTexture(GL_TEXTURE_2D, m_Id);
     }
 
     unsigned int Texture::GetId() const {
-        return _id;
+        return m_Id;
     }
 
     int Texture::GetWidth() const {
-        return _width;
+        return m_Width;
     }
 
     int Texture::GetHeight() const {
-        return _height;
+        return m_Height;
     }
 
     int Texture::GetNrChannels() const {
-        return _nrChannels;
+        return m_NrChannels;
     }
 
     int Texture::GetIndex() const {
 
-        switch (_index) {
+        switch (m_Index) {
             case GL_TEXTURE0:
                 return 0;
             case GL_TEXTURE1:

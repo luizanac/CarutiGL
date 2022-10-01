@@ -7,11 +7,11 @@
 namespace Caruti {
     class Texture {
     private:
-        unsigned int _id{};
-        int _width{};
-        int _height{};
-        int _nrChannels{};
-        GLenum _index{};
+        unsigned int m_Id{};
+        int m_Width{};
+        int m_Height{};
+        int m_NrChannels{};
+        GLenum m_Index{};
     public:
         Texture(const char *texPath, GLenum channelFormat);
 

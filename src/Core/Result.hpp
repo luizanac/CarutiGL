@@ -10,23 +10,23 @@ namespace Caruti {
     template<typename T>
     class Result {
     private:
-        T _data;
-        EResultStatus _status;
+        T m_Data;
+        EResultStatus m_Status;
 
     public:
-        explicit Result(EResultStatus status) : _status(status) {
-            _data = nullptr;
+        explicit Result(EResultStatus status) : m_Status(status) {
+            m_Data = nullptr;
         }
 
-        Result(T data, EResultStatus status) : _data(data), _status(status) {
+        Result(T data, EResultStatus status) : m_Data(data), m_Status(status) {
         }
 
         T &getData() {
-            return _data;
+            return m_Data;
         }
 
         [[nodiscard]] EResultStatus GetStatus() const {
-            return _status;
+            return m_Status;
         }
     };
 }

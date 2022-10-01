@@ -16,7 +16,7 @@ namespace Caruti {
         static void CheckCompileErrors(unsigned int shader, const std::string &type);
 
     public:
-        unsigned int ProgramId;
+        unsigned int m_ProgramId;
 
         Shader(const char *vertexPath, const char *fragmentPath);
 
@@ -33,7 +33,7 @@ namespace Caruti {
         void SetTexture(const char *uName, const Texture &texture);
 
         ~Shader() {
-            glDeleteProgram(ProgramId);
+            glDeleteProgram(m_ProgramId);
         }
 
     };

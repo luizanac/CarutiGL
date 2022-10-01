@@ -5,7 +5,7 @@
 
 class Cube {
 public:
-    constexpr static float vertices[] = {
+    constexpr static float m_Vertices[] = {
             -0.5, -0.5, -0.5,    0.0, 0.50,
             0.5, -0.5, -0.5,     0.25, 0.5,
             0.5, 0.5, -0.5,      0.25, 0.75,
