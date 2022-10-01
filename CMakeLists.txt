@@ -12,6 +12,7 @@ file(GLOB SOURCES **/*.cpp
         src/**/*.cpp
         src/Core/Graphics/*.cpp
         src/Core/Input/*.cpp
+        src/Caruticraft/*.cpp
         third/glad/src/glad.c
         third/stb/src/stb_image.cpp)
 add_executable(CarutiGL ${SOURCES} ${RES_FILES})

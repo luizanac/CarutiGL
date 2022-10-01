@@ -4,10 +4,10 @@
 #include <iostream>
 #include "Core/Application.hpp"
 #include "Core/Camera.hpp"
-#include "Core/Graphics/Texture.hpp"
-#include "Core/Graphics/Shader.hpp"
+
 #include "../third/perlin/PerlinNoise.hpp"
 #include "stb_image.h"
+#include "Caruticraft/EnvironmentManager.hpp"
 
 using namespace Caruti;
 
@@ -17,29 +17,23 @@ private:
     float m_LastX = (float) m_ScreenWidth / 2.0f;
     float m_LastY = (float) m_ScreenHeight / 2.0f;
 
-    unsigned int m_VAO{}, m_VBO{}, m_SkyboxVAO{}, m_SkyboxVBO{};
-
-    Texture m_GrassTex;
     Shader m_Shader;
-
-    unsigned int m_CubeMapTexHandle{};
-    Shader m_ShaderSkybox;
-
-    glm::mat4 m_Model = glm::mat4(1.0f);
     glm::mat4 m_View = m_Camera.GetViewMatrix();
     glm::mat4 m_Projection = glm::perspective(
             glm::radians(m_Camera.GetFov()),
             (float) m_ScreenWidth / (float) m_ScreenHeight, 0.1f,
-            200.0f);
+            100.0f);
 
-    const siv::PerlinNoise::seed_type m_Seed = 123458u;
-    const siv::PerlinNoise m_Perlin{m_Seed};
+    EnvironmentManager *m_EnvManager;
+
+    unsigned int m_SkyboxVAO{}, m_SkyboxVBO{};
+    unsigned int m_CubeMapTexHandle{};
+    Shader m_ShaderSkybox;
+
 
     void UpdateCamera();
 
     void UpdateMatrices();
-
-    void DrawChunks();
 
     void DrawSkybox();
 
@@ -50,9 +44,7 @@ public:
     CaruticraftApplication(int screenWidth, int screenHeight);
 
     ~CaruticraftApplication() {
-        glDeleteVertexArrays(1, &m_VAO);
-        glDeleteBuffers(1, &m_VBO);
-
+        delete m_EnvManager;
         glDeleteVertexArrays(1, &m_SkyboxVAO);
         glDeleteBuffers(1, &m_SkyboxVBO);
     }
