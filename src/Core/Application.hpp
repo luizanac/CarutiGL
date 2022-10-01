@@ -1,6 +1,7 @@
 #ifndef CARUTIGL_APPLICATION_HPP
 #define CARUTIGL_APPLICATION_HPP
 
+#include <iostream>
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "Result.hpp"
@@ -22,7 +23,7 @@ namespace Caruti {
     public:
         Application(int screenWidth, int screenHeight);
 
-        virtual void OnUpdate() = 0;
+        virtual void Update() = 0;
 
         void Run() {
             double lastTime = glfwGetTime();
@@ -36,12 +37,12 @@ namespace Caruti {
                     m_FpsCounter = 0;
                     lastTime += 1.0;
                 }
-                
+
                 glEnable(GL_DEPTH_TEST);
                 glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                OnUpdate();
+                Update();
 
                 MouseInput::Reset();
 

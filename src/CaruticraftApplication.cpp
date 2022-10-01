@@ -10,7 +10,7 @@ CaruticraftApplication::CaruticraftApplication(int screenWidth, int screenHeight
     glfwSetWindowTitle(m_Window, "CarutiGL - Caruticraft");
     glfwSwapInterval(0);
 
-    m_EnvManager = new EnvironmentManager(123456u, m_Shader);
+    m_EnvironmentManager = new EnvironmentManager(123456u);
 
     //Creating skybox
     glGenVertexArrays(1, &m_SkyboxVAO);
@@ -36,49 +36,35 @@ CaruticraftApplication::CaruticraftApplication(int screenWidth, int screenHeight
     //End creating skybox
 }
 
-void CaruticraftApplication::OnUpdate() {
-    UpdateCamera();
-    UpdateMatrices();
-
-    m_EnvManager->DrawChunks(10, 50, 10, 0.05);
+void CaruticraftApplication::Update() {
+    m_EnvironmentManager->Update(m_DeltaTime);
 
     DrawSkybox();
+    UpdateCamera();
 }
 
 void CaruticraftApplication::UpdateCamera() {
     if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_Window, true);
     if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
-        m_Camera.ProcessKeyboard(FORWARD, m_DeltaTime);
+        Camera::Get().Move(FORWARD, m_DeltaTime);
     if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
-        m_Camera.ProcessKeyboard(BACKWARD, m_DeltaTime);
+        Camera::Get().Move(BACKWARD, m_DeltaTime);
     if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
-        m_Camera.ProcessKeyboard(LEFT, m_DeltaTime);
+        Camera::Get().Move(LEFT, m_DeltaTime);
     if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
-        m_Camera.ProcessKeyboard(RIGHT, m_DeltaTime);
+        Camera::Get().Move(RIGHT, m_DeltaTime);
 
-    auto mousePos = MouseInput::GetMousePosition();
-    float xOffset = mousePos.x - m_LastX;
-    float yOffset = m_LastY - mousePos.y;
-
-    m_LastX = mousePos.x;
-    m_LastY = mousePos.y;
-    m_Camera.ProcessMouseMovement(xOffset, yOffset);
+    Camera::Get().Update(m_DeltaTime);
 }
 
-void CaruticraftApplication::UpdateMatrices() {
-    m_Shader.Use();
-    m_View = m_Camera.GetViewMatrix();
-    m_Shader.SetMat4("view", m_View);
-    m_Shader.SetMat4("projection", m_Projection);
-}
 
 void CaruticraftApplication::DrawSkybox() {
     glDepthFunc(GL_LEQUAL);
     m_ShaderSkybox.Use();
-    m_View = glm::mat4(glm::mat3(m_Camera.GetViewMatrix())); // remove translation from the view matrix
-    m_ShaderSkybox.SetMat4("view", m_View);
-    m_ShaderSkybox.SetMat4("projection", m_Projection);
+    auto view = glm::mat4(glm::mat3(Camera::Get().GetViewMatrix())); // remove translation from the view matrix
+    m_ShaderSkybox.SetMat4("view", view);
+    m_ShaderSkybox.SetMat4("projection", Camera::Get().GetProjectionMatrix());
     glBindVertexArray(m_SkyboxVAO);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_CubeMapTexHandle);

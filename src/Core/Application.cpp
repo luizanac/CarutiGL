@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Application.hpp"
+#include "Camera.hpp"
 
 namespace Caruti {
 
@@ -18,6 +19,8 @@ namespace Caruti {
         m_Window = glfwConfigResult.getData();
         glfwSetFramebufferSizeCallback(m_Window, FrameBufferSizeCallback);
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        Camera::Init(m_ScreenWidth, m_ScreenHeight);
         MouseInput::Init(m_Window);
     }
 

@@ -3,10 +3,11 @@
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "Cube.hpp"
+#include "../Core/Camera.hpp"
 
-EnvironmentManager::EnvironmentManager(siv::PerlinNoise::seed_type seed, Shader &shader) :
+EnvironmentManager::EnvironmentManager(siv::PerlinNoise::seed_type seed) :
         m_Seed(seed),
-        m_Shader(shader),
+        m_Shader("Resources/Shaders/Vertex.vert", "Resources/Shaders/Fragment.frag"),
         m_GrassTex("Resources/Textures/block-texture.png", GL_RGBA) {
     glGenBuffers(1, &m_VBO);
     glGenVertexArrays(1, &m_VAO);
@@ -22,6 +23,11 @@ EnvironmentManager::EnvironmentManager(siv::PerlinNoise::seed_type seed, Shader 
     m_Shader.Use();
     m_GrassTex.ActivateAndBind(GL_TEXTURE0);
     m_Shader.SetTexture("texture1", m_GrassTex);
+}
+
+void EnvironmentManager::Update(const float &deltaTime) {
+    DrawChunks(10, 50, 10, 0.05);
+    UpdateMatrices();
 }
 
 void EnvironmentManager::DrawChunks(const int &horizontalSize, const int &verticalSize, const int &depthSize,
@@ -43,6 +49,12 @@ void EnvironmentManager::DrawChunks(const int &horizontalSize, const int &vertic
     }
 
     glBindVertexArray(0);
+}
+
+void EnvironmentManager::UpdateMatrices() {
+    m_Shader.Use();
+    m_Shader.SetMat4("view", Camera::Get().GetViewMatrix());
+    m_Shader.SetMat4("projection", Camera::Get().GetProjectionMatrix());
 }
 
 

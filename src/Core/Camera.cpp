@@ -1,14 +1,13 @@
 #include "Camera.hpp"
+#include "Input/MouseInput.hpp"
 
 #include <cmath>
 
 namespace Caruti {
 
-    glm::mat4 Camera::GetViewMatrix() const {
-        return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
-    }
+    Camera *Camera::m_Instance;
 
-    void Camera::ProcessKeyboard(ECameraMovement direction, float deltaTime) {
+    void Camera::Move(ECameraMovement direction, float deltaTime) {
         float velocity = m_MovementSpeed * deltaTime;
         if (direction == FORWARD)
             m_Position += m_Front * velocity;
@@ -24,32 +23,24 @@ namespace Caruti {
         xOffset *= m_MouseSensitivity;
         yOffset *= m_MouseSensitivity;
 
-        m_Yaw += xOffset;
-        m_Pitch += yOffset;
+        m_Rotation.y += xOffset;
+        m_Rotation.x += yOffset;
 
         if (constrainPitch) {
-            if (m_Pitch > 80.0f)
-                m_Pitch = 80.0f;
-            if (m_Pitch < -80.0f)
-                m_Pitch = -80.0f;
+            if (m_Rotation.x > 80.0f)
+                m_Rotation.x = 80.0f;
+            if (m_Rotation.x < -80.0f)
+                m_Rotation.x = -80.0f;
         }
 
         UpdateCameraVectors();
     }
 
-    void Camera::ProcessMouseScroll(float yoffset) {
-        m_Fov -= (float) yoffset;
-        if (m_Fov < 1.0f)
-            m_Fov = 1.0f;
-        if (m_Fov > 45.0f)
-            m_Fov = 45.0f;
-    }
-
     void Camera::UpdateCameraVectors() {
         glm::vec3 front;
-        front.x = (float) std::cos((float) glm::radians(m_Yaw)) * (float) cos(glm::radians(m_Pitch));
-        front.y = (float) std::sin(glm::radians(m_Pitch));
-        front.z = (float) std::sin((float) glm::radians(m_Yaw)) * (float) cos(glm::radians(m_Pitch));
+        front.x = (float) std::cos((float) glm::radians(m_Rotation.y)) * (float) cos(glm::radians(m_Rotation.x));
+        front.y = (float) std::sin(glm::radians(m_Rotation.x));
+        front.z = (float) std::sin((float) glm::radians(m_Rotation.y)) * (float) cos(glm::radians(m_Rotation.x));
 
         m_Front = glm::normalize(front);
         m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
@@ -60,4 +51,34 @@ namespace Caruti {
         return m_Fov;
     }
 
+    Camera &Camera::Init(int &screenWidth, int &screenHeight, vec3 position, vec3 rotation, vec3 up) {
+        if (m_Instance == nullptr)
+            m_Instance = new Camera(screenWidth, screenHeight, position, rotation, up);
+
+        return *m_Instance;
+    }
+
+    Camera &Camera::Get() {
+        return *m_Instance;
+    }
+
+    glm::mat4 Camera::GetViewMatrix() const {
+        return glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+    }
+
+    glm::mat4 Camera::GetProjectionMatrix() const {
+        return glm::perspective(
+                glm::radians(GetFov()),
+                (float) m_ScreenWidth / (float) m_ScreenHeight, 0.1f, 100.0f);
+    }
+
+    void Camera::Update(const float &deltaTime) {
+        auto mousePos = MouseInput::GetMousePosition();
+        float xOffset = mousePos.x - m_LastX;
+        float yOffset = m_LastY - mousePos.y;
+
+        m_LastX = mousePos.x;
+        m_LastY = mousePos.y;
+        Camera::Get().ProcessMouseMovement(xOffset, yOffset);
+    }
 }

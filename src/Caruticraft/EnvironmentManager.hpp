@@ -13,19 +13,24 @@ private:
 
     Texture m_GrassTex;
     Shader m_Shader;
-    
+
     siv::PerlinNoise::seed_type m_Seed;
     const siv::PerlinNoise m_Perlin{m_Seed};
 
-public:
-    explicit EnvironmentManager(siv::PerlinNoise::seed_type seed, Shader &shader);
-
     void DrawChunks(const int &horizontalSize, const int &verticalSize, const int &depthSize, const float &factor);
+
+    void UpdateMatrices();
+
+public:
+    explicit EnvironmentManager(siv::PerlinNoise::seed_type seed);
+
+    void Update(const float &deltaTime);
 
     ~EnvironmentManager() {
         glDeleteVertexArrays(1, &m_VAO);
         glDeleteBuffers(1, &m_VBO);
     }
+
 };
 
 

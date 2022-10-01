@@ -3,6 +3,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "Entity.hpp"
 
 namespace Caruti {
 
@@ -13,53 +14,71 @@ namespace Caruti {
         RIGHT
     };
 
-    const float YAW = 80.0f;
     const float PITCH = -40.0f;
+    const float YAW = 80.0f;
+    const float ROLL = 0;
     const float SPEED = 5.5f;
     const float SENSITIVITY = 0.1f;
     const float FOV = 60.0f;
 
-    class Camera {
+    class Camera : public Entity {
     private:
-        float m_Yaw;
-        float m_Pitch;
-
+        int &m_ScreenWidth;
+        int &m_ScreenHeight;
         float m_MovementSpeed;
         float m_MouseSensitivity;
         float m_Fov;
 
-        glm::vec3 m_Position{};
-        glm::vec3 m_Front;
-        glm::vec3 m_Up{};
-        glm::vec3 m_Right{};
-        glm::vec3 m_WorldUp{};
-    public:
-        explicit Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-                        float yaw = YAW, float pitch = PITCH) :
-                m_Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+        float m_LastX = (float) m_ScreenWidth / 2.0f;
+        float m_LastY = (float) m_ScreenHeight / 2.0f;
+
+        vec3 m_Front;
+        vec3 m_Up{};
+        vec3 m_Right{};
+        vec3 m_WorldUp{};
+
+        static Camera *m_Instance;
+
+        explicit Camera(int &screenWidth, int &screenHeight, vec3 position, vec3 rotation, vec3 up) :
+                m_ScreenWidth(screenWidth),
+                m_ScreenHeight(screenHeight),
+                m_Front(vec3(0.0f, 0.0f, -1.0f)),
                 m_MovementSpeed(SPEED),
                 m_MouseSensitivity(SENSITIVITY),
                 m_Fov(FOV) {
 
             m_Position = position;
+            m_Rotation = rotation;
             m_WorldUp = up;
-            m_Yaw = yaw;
-            m_Pitch = pitch;
             UpdateCameraVectors();
         }
 
+    public:
+        static Camera &Init(int &screenWidth, int &screenHeight,
+                            vec3 position = vec3(0.0f, 0.0f, 0.0f),
+                            vec3 rotation = vec3(PITCH, YAW, ROLL),
+                            vec3 up = vec3(0.0f, 1.0f, 0.0f));
+
+        static Camera &Get();
+
+        void Update(const float &deltaTime) override;
+        
         [[nodiscard]]glm::mat4 GetViewMatrix() const;
 
-        void ProcessKeyboard(ECameraMovement direction, float deltaTime);
+        [[nodiscard]]glm::mat4 GetProjectionMatrix() const;
+
+        void Move(ECameraMovement direction, float deltaTime);
 
         void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
-
-        void ProcessMouseScroll(float yoffset);
 
         [[nodiscard]]float GetFov() const;
 
     private:
         void UpdateCameraVectors();
+
+        ~Camera() override {
+            delete m_Instance;
+        }
     };
 }
 #endif //CARUTIGL_CAMERA_HPP
