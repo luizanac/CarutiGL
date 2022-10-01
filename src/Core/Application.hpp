@@ -1,77 +1,60 @@
 #ifndef CARUTIGL_APPLICATION_HPP
 #define CARUTIGL_APPLICATION_HPP
 
-#include <iostream>
-#include <glad/glad.h>
-#include <valarray>
+#include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "Result.hpp"
-#include "Shader.hpp"
-#include "stb_image.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "Texture.hpp"
-#include "Cube.hpp"
-#include "Camera.hpp"
-#include <utility>
-#include <functional>
+#include "Input/MouseInput.hpp"
+#include "fmt/core.h"
 
 namespace Caruti {
 
     class Application {
-    private:
-        float _deltaTime = 0.0f; // Time between current frame and last frame
-        float _lastFrame = 0.0f; // Time of last frame
-        int _screenWidth;
-        int _screenHeight;
-        GLFWwindow *_window;
+    protected:
+        int m_ScreenWidth;
+        int m_ScreenHeight;
+        GLFWwindow *m_Window;
+        float m_DeltaTime = 0.0f; // Time between current frame and last frame
+        float m_LastFrame = 0.0f; // Time of last frame
 
-        static Application *_instance;
-
-        std::function<void(float, float)> _scrollCallback = nullptr;
-        std::function<void(float, float)> _cursorPosCallback = nullptr;
-        std::function<void(float)> _onUpdate = nullptr;
+        int m_FpsCounter{};
+        double m_FrameTime{};
     public:
-        static Application &Create(int screenWidth = 1920, int screenHeight = 1080);
+        Application(int screenWidth, int screenHeight);
 
-        static Application &Get() { return *_instance; }
-
-        GLFWwindow *GetWindow() { return _window; }
+        virtual void OnUpdate() = 0;
 
         void Run() {
-            while (!glfwWindowShouldClose(_window)) {
+            double lastTime = glfwGetTime();
+            while (!glfwWindowShouldClose(m_Window)) {
                 UpdateDeltaTime();
-                if (_onUpdate != nullptr)
-                    _onUpdate(_deltaTime);
-
+                auto currentTime = glfwGetTime();
+                m_FpsCounter++;
+                if (currentTime - lastTime >= 1.0) {
+                    m_FrameTime = 1000 / double(m_FpsCounter);
+                    std::cout << fmt::format("{0}FPS - {1:.2f}ms", m_FpsCounter, m_FrameTime) << std::endl;
+                    m_FpsCounter = 0;
+                    lastTime += 1.0;
+                }
+                
                 glEnable(GL_DEPTH_TEST);
                 glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                glfwSwapBuffers(_window);
+                OnUpdate();
+
+                MouseInput::Reset();
+
+                glfwSwapBuffers(m_Window);
                 glfwPollEvents();
             }
         }
 
-        static void SetScrollCallback(std::function<void(float, float)> &&scrollCallback);
-
-        static void SetCursorPosCallback(std::function<void(float, float)> &&cursorPosCallback);
-
-        static void OnUpdate(std::function<void(float)> updateCallback);
-
-        [[nodiscard]] float GetDeltaTime() const;
-
-        [[nodiscard]] float GetLastFrame() const;
-
-        virtual ~Application() {
-            delete _instance;
+        ~Application() {
             glfwTerminate();
         }
 
-
     private:
-        Application(int screenWidth, int screenHeight);
-
         void UpdateDeltaTime();
 
         static Result<GLFWwindow *> ConfigureGlfw(int width, int height);

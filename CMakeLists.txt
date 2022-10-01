@@ -10,6 +10,8 @@ find_package(OpenGL REQUIRED)
 
 file(GLOB SOURCES **/*.cpp
         src/**/*.cpp
+        src/Core/Graphics/*.cpp
+        src/Core/Input/*.cpp
         third/glad/src/glad.c
         third/stb/src/stb_image.cpp)
 add_executable(CarutiGL ${SOURCES} ${RES_FILES})
@@ -28,6 +30,7 @@ target_include_directories(CarutiGL PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/third/fmt/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third/stb/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third/glm/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third/perlin
         )
 
 #Link libraries

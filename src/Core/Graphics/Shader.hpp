@@ -2,7 +2,7 @@
 #define CARUTIGL_SHADER_HPP
 
 #include <string>
-#include "Result.hpp"
+#include "../Result.hpp"
 #include "glad/glad.h"
 #include  "glm/glm.hpp"
 #include "Texture.hpp"

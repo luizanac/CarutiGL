@@ -1,22 +1,22 @@
 #include <iostream>
-#include <vector>
+
 #include "Texture.hpp"
 #include "stb_image.h"
 #include "fmt/core.h"
 
 namespace Caruti {
 
-
     Texture::Texture(const char *texPath, GLenum channelFormat) {
         stbi_set_flip_vertically_on_load(true);
+
         glGenTextures(1, &_id);
         glBindTexture(GL_TEXTURE_2D, _id);
 
         //TODO: Create a function to configure texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         unsigned char *buffer = stbi_load(
                 texPath,
@@ -74,6 +74,35 @@ namespace Caruti {
         }
 
         return -1;
+    }
+
+    unsigned int Texture::LoadCubemap(std::vector<std::string> faces) {
+        {
+            stbi_set_flip_vertically_on_load(false);
+            unsigned int textureId;
+            glGenTextures(1, &textureId);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+
+            int width, height, nrChannels;
+            for (unsigned int i = 0; i < faces.size(); i++) {
+                unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+                if (data) {
+                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                                 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+                    );
+                } else {
+                    std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+                }
+                stbi_image_free(data);
+            }
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+            return textureId;
+        }
     }
 }
 

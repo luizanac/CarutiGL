@@ -1,19 +1,13 @@
+#include <iostream>
 #include "Application.hpp"
 
 namespace Caruti {
 
-    Application *Application::_instance = nullptr;
-
-    Application &Application::Create(int screenWidth, int screenHeight) {
-        _instance = new Application(screenWidth, screenHeight);
-        return *_instance;
-    }
-
     Application::Application(int screenWidth, int screenHeight) :
-            _screenWidth(screenWidth),
-            _screenHeight(screenHeight) {
+            m_ScreenWidth(screenWidth),
+            m_ScreenHeight(screenHeight) {
 
-        Result<GLFWwindow *> glfwConfigResult = ConfigureGlfw(_screenWidth, _screenHeight);
+        Result<GLFWwindow *> glfwConfigResult = ConfigureGlfw(m_ScreenWidth, m_ScreenHeight);
         if (glfwConfigResult.GetStatus() == Fail)
             exit(Fail);
 
@@ -21,15 +15,16 @@ namespace Caruti {
         if (gladConfigResult == Fail)
             exit(Fail);
 
-        _window = glfwConfigResult.getData();
-        glfwSetFramebufferSizeCallback(_window, FrameBufferSizeCallback);
-        glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        m_Window = glfwConfigResult.getData();
+        glfwSetFramebufferSizeCallback(m_Window, FrameBufferSizeCallback);
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        MouseInput::Init(m_Window);
     }
 
     void Application::UpdateDeltaTime() {
         auto currentFrame = (float) glfwGetTime();
-        _deltaTime = currentFrame - _lastFrame;
-        _lastFrame = currentFrame;
+        m_DeltaTime = currentFrame - m_LastFrame;
+        m_LastFrame = currentFrame;
     }
 
     Result<GLFWwindow *> Application::ConfigureGlfw(int width, int height) {
@@ -38,6 +33,7 @@ namespace Caruti {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, 16);
 
         GLFWwindow *window = glfwCreateWindow(width, height, "CarutiGL", nullptr, nullptr);
         if (window == nullptr) {
@@ -61,36 +57,5 @@ namespace Caruti {
 
     void Application::FrameBufferSizeCallback(GLFWwindow *window, int width, int height) {
         glViewport(0, 0, width, height);
-    }
-
-    void Application::SetScrollCallback(std::function<void(float, float)> &&scrollCallback) {
-        Application::Get()._scrollCallback = scrollCallback;
-        glfwSetScrollCallback(Application::Get().GetWindow(), [](GLFWwindow *window, double xOffset, double yOffset) {
-            if (Application::Get()._scrollCallback != nullptr) {
-                Application::Get()._scrollCallback((float) xOffset, (float) yOffset);
-            }
-        });
-    }
-
-    void Application::SetCursorPosCallback(std::function<void(float, float)> &&cursorPosCallback) {
-        Application::Get()._cursorPosCallback = std::move(cursorPosCallback);
-        glfwSetCursorPosCallback(Application::Get().GetWindow(), [](GLFWwindow *window, double xPos, double yPos) {
-            if (Application::Get()._cursorPosCallback != nullptr) {
-                Application::Get()._cursorPosCallback((float) xPos, (float) yPos);
-            }
-        });
-    }
-
-    void Application::OnUpdate(std::function<void(float)> updateCallback) {
-        Application::Get()._onUpdate = std::move(updateCallback);
-    }
-
-
-    float Application::GetDeltaTime() const {
-        return _deltaTime;
-    }
-
-    float Application::GetLastFrame() const {
-        return _lastFrame;
     }
 }

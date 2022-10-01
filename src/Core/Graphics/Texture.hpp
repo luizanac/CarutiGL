@@ -2,6 +2,7 @@
 #define CARUTIGL_TEXTURE_HPP
 
 #include "glad/glad.h"
+#include <vector>
 
 namespace Caruti {
     class Texture {
@@ -10,7 +11,7 @@ namespace Caruti {
         int _width{};
         int _height{};
         int _nrChannels{};
-        GLenum _index;
+        GLenum _index{};
     public:
         Texture(const char *texPath, GLenum channelFormat);
 
@@ -25,6 +26,8 @@ namespace Caruti {
         [[nodiscard]] int GetNrChannels() const;
 
         [[nodiscard]] int GetIndex() const;
+
+        [[nodiscard]]static unsigned int LoadCubemap(std::vector<std::string> faces);
     };
 }
 

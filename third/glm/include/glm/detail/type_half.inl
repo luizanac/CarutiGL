@@ -1,12 +1,12 @@
-namespace glm{
-namespace detail
+namespace glm::detail
 {
 	GLM_FUNC_QUALIFIER float overflow()
 	{
 		volatile float f = 1e10;
 
 		for(int i = 0; i < 10; ++i)
-			f *= f; // this will overflow before the for loop terminates
+			f = f * f; // this will overflow before the for loop terminates
+
 		return f;
 	}
 
@@ -237,5 +237,4 @@ namespace detail
 		}
 	}
 
-}//namespace detail
 }//namespace glm

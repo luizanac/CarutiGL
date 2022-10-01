@@ -13,38 +13,38 @@ namespace Caruti {
         RIGHT
     };
 
-    const float YAW = -90.0f;
-    const float PITCH = 0.0f;
-    const float SPEED = 2.5f;
+    const float YAW = 80.0f;
+    const float PITCH = -40.0f;
+    const float SPEED = 5.5f;
     const float SENSITIVITY = 0.1f;
     const float FOV = 60.0f;
 
     class Camera {
     private:
-        float _yaw;
-        float _pitch;
+        float m_Yaw;
+        float m_Pitch;
 
-        float _movementSpeed;
-        float _mouseSensitivity;
-        float _fov;
+        float m_MovementSpeed;
+        float m_MouseSensitivity;
+        float m_Fov;
 
-        glm::vec3 _position{};
-        glm::vec3 _front;
-        glm::vec3 _up{};
-        glm::vec3 _right{};
-        glm::vec3 _worldUp{};
+        glm::vec3 m_Position{};
+        glm::vec3 m_Front;
+        glm::vec3 m_Up{};
+        glm::vec3 m_Right{};
+        glm::vec3 m_WorldUp{};
     public:
         explicit Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
                         float yaw = YAW, float pitch = PITCH) :
-                _front(glm::vec3(0.0f, 0.0f, -1.0f)),
-                _movementSpeed(SPEED),
-                _mouseSensitivity(SENSITIVITY),
-                _fov(FOV) {
+                m_Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+                m_MovementSpeed(SPEED),
+                m_MouseSensitivity(SENSITIVITY),
+                m_Fov(FOV) {
 
-            _position = position;
-            _worldUp = up;
-            _yaw = yaw;
-            _pitch = pitch;
+            m_Position = position;
+            m_WorldUp = up;
+            m_Yaw = yaw;
+            m_Pitch = pitch;
             UpdateCameraVectors();
         }
 
