@@ -7,7 +7,7 @@
 #include  "glm/glm.hpp"
 #include "Texture.hpp"
 
-namespace Caruti {
+namespace Caruti::Graphics {
     class Shader {
     private:
 

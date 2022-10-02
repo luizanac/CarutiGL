@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Caruti {
+namespace Caruti::Graphics {
     class Texture {
     private:
         unsigned int m_Id{};

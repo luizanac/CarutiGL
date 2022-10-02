@@ -5,7 +5,7 @@
 #include "fmt/core.h"
 #include "glm/gtc/type_ptr.hpp"
 
-namespace Caruti {
+namespace Caruti::Graphics {
 
     Shader::Shader(const char *vertexPath, const char *fragmentPath) {
         std::string vertexCode;

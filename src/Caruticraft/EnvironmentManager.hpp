@@ -6,18 +6,22 @@
 
 using namespace Caruti;
 
-class EnvironmentManager : public Entity {
-private:
-    std::vector<Chunk *> *m_Chunks = new std::vector<Chunk *>();
-public:
-    explicit EnvironmentManager(siv::PerlinNoise::seed_type seed);
+namespace Caruticraft {
 
-    void Update(const float &deltaTime) override;
+    class EnvironmentManager : public Entity {
+    private:
+        std::vector<Chunk *> *m_Chunks = new std::vector<Chunk *>();
+    public:
+        explicit EnvironmentManager(siv::PerlinNoise::seed_type seed);
 
-    ~EnvironmentManager() override {
-        delete m_Chunks;
-    }
-};
+        void Update(const float &deltaTime) override;
+
+        ~EnvironmentManager() override {
+            delete m_Chunks;
+        }
+    };
+
+}
 
 
 #endif //CARUTIGL_ENVIRONMENTMANAGER_HPP

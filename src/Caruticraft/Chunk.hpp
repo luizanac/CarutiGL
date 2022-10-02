@@ -8,37 +8,39 @@
 
 using namespace Caruti;
 
-class Chunk : public Entity {
-private:
-    unsigned int m_VAO{}, m_VBO{};
-    bool m_ShouldRender = false;
+namespace Caruticraft {
 
-    std::vector<Block *> *m_Blocks = new std::vector<Block *>();
+    class Chunk : public Entity {
+    private:
+        unsigned int m_VAO{}, m_VBO{};
+        bool m_ShouldRender = false;
 
-    Shader m_BlocksShader = Shader("Resources/Shaders/Vertex.vert", "Resources/Shaders/Fragment.frag");
-    Texture m_BlocksTexture = Texture("Resources/Textures/block-texture.png", GL_RGBA);
+        std::vector<Block *> *m_Blocks = new std::vector<Block *>();
 
-    siv::PerlinNoise::seed_type m_Seed;
-    const siv::PerlinNoise m_Perlin{m_Seed};
-public:
+        Shader m_BlocksShader = Shader("Resources/Shaders/Vertex.vert", "Resources/Shaders/Fragment.frag");
+        Texture m_BlocksTexture = Texture("Resources/Textures/block-texture.png", GL_RGBA);
 
-    Chunk(siv::PerlinNoise::seed_type seed,
-          const int &horizontalSize,
-          const int &verticalSize,
-          const int &depthSize,
-          const float &factor,
-          vec3 position = vec3(1, 1, 1));
+        siv::PerlinNoise::seed_type m_Seed;
+        const siv::PerlinNoise m_Perlin{m_Seed};
+    public:
 
-    void SetShouldRender(const vec3 &playerPosition);
+        Chunk(siv::PerlinNoise::seed_type seed,
+              const int &horizontalSize,
+              const int &verticalSize,
+              const int &depthSize,
+              const float &factor,
+              vec3 position = vec3(1, 1, 1));
 
-    void Update(const float &deltaTime) override;
+        void SetShouldRender(const vec3 &playerPosition);
 
-    ~Chunk() override {
-        delete m_Blocks;
-        glDeleteVertexArrays(1, &m_VAO);
-        glDeleteBuffers(1, &m_VBO);
-    }
-};
+        void Update(const float &deltaTime) override;
 
+        ~Chunk() override {
+            delete m_Blocks;
+            glDeleteVertexArrays(1, &m_VAO);
+            glDeleteBuffers(1, &m_VBO);
+        }
+    };
+}
 
 #endif //CARUTIGL_CHUNK_HPP

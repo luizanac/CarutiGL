@@ -6,6 +6,7 @@
 #include "Caruticraft/EnvironmentManager.hpp"
 
 using namespace Caruti;
+using namespace Caruticraft;
 
 class CaruticraftApplication : public Application {
 private:

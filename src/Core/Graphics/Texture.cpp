@@ -1,10 +1,9 @@
 #include <iostream>
-
 #include "Texture.hpp"
 #include "stb_image.h"
 #include "fmt/core.h"
 
-namespace Caruti {
+namespace Caruti::Graphics {
 
     Texture::Texture(const char *texPath, GLenum channelFormat) {
         stbi_set_flip_vertically_on_load(true);
