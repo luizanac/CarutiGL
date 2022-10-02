@@ -3,9 +3,10 @@
 
 #include "glm/glm.hpp"
 
-using namespace glm;
-
 namespace Caruti {
+
+
+    using namespace glm;
 
     class Entity {
     public:

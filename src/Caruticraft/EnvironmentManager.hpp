@@ -1,36 +1,22 @@
 #ifndef CARUTIGL_ENVIRONMENTMANAGER_HPP
 #define CARUTIGL_ENVIRONMENTMANAGER_HPP
 
-#include "PerlinNoise.hpp"
-#include "../Core/Graphics/Texture.hpp"
-#include "../Core/Graphics/Shader.hpp"
+#include "../Core/Entity.hpp"
+#include "Chunk.hpp"
 
 using namespace Caruti;
 
-class EnvironmentManager {
+class EnvironmentManager : public Entity {
 private:
-    unsigned int m_VAO{}, m_VBO{};
-
-    Texture m_GrassTex;
-    Shader m_Shader;
-
-    siv::PerlinNoise::seed_type m_Seed;
-    const siv::PerlinNoise m_Perlin{m_Seed};
-
-    void DrawChunks(const int &horizontalSize, const int &verticalSize, const int &depthSize, const float &factor);
-
-    void UpdateMatrices();
-
+    std::vector<Chunk *> *m_Chunks = new std::vector<Chunk *>();
 public:
     explicit EnvironmentManager(siv::PerlinNoise::seed_type seed);
 
-    void Update(const float &deltaTime);
+    void Update(const float &deltaTime) override;
 
-    ~EnvironmentManager() {
-        glDeleteVertexArrays(1, &m_VAO);
-        glDeleteBuffers(1, &m_VBO);
+    ~EnvironmentManager() override {
+        delete m_Chunks;
     }
-
 };
 
 

@@ -1,6 +1,6 @@
 #include "CaruticraftApplication.hpp"
 #include "Core/Input/MouseInput.hpp"
-#include "Caruticraft/Cube.hpp"
+#include "Caruticraft/Block.hpp"
 #include "Core/Skybox.hpp"
 
 CaruticraftApplication::CaruticraftApplication(int screenWidth, int screenHeight) :

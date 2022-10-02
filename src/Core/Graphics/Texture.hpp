@@ -2,6 +2,7 @@
 #define CARUTIGL_TEXTURE_HPP
 
 #include "glad/glad.h"
+#include <string>
 #include <vector>
 
 namespace Caruti {
