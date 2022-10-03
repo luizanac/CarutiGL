@@ -5,6 +5,7 @@
 #include "../Core/Entity.hpp"
 #include "Block.hpp"
 #include "PerlinNoise.hpp"
+#include <list>
 
 using namespace Caruti;
 
@@ -12,10 +13,15 @@ namespace Caruticraft {
 
     class Chunk : public Entity {
     private:
-        unsigned int m_VAO{}, m_VBO{};
+        int m_HorizontalSize;
+        int m_VerticalSize;
+        int m_DepthSize;
+
+        unsigned int m_VAO{}, m_VerticesVBO{}, m_TexCoordsVBO{};
         bool m_ShouldRender = false;
 
-        std::vector<Block *> *m_Blocks = new std::vector<Block *>();
+        std::vector<Block *> *m_TerrainBlocks = new std::vector<Block *>();
+        std::vector<Block *> *m_TreeBlocks = new std::vector<Block *>();
 
         Shader m_BlocksShader = Shader("Resources/Shaders/Vertex.vert", "Resources/Shaders/Fragment.frag");
         Texture m_BlocksTexture = Texture("Resources/Textures/block-texture.png", GL_RGBA);
@@ -28,17 +34,18 @@ namespace Caruticraft {
               const int &horizontalSize,
               const int &verticalSize,
               const int &depthSize,
-              const float &factor,
-              vec3 position = vec3(1, 1, 1));
+              float &factor,
+              vec3 position = vec3(0, 0, 0));
 
-        void SetShouldRender(const vec3 &playerPosition);
+        void SetShouldRender(bool shouldRender);
 
         void Update(const float &deltaTime) override;
 
         ~Chunk() override {
-            delete m_Blocks;
+            delete m_TerrainBlocks;
             glDeleteVertexArrays(1, &m_VAO);
-            glDeleteBuffers(1, &m_VBO);
+            glDeleteBuffers(1, &m_VerticesVBO);
+            glDeleteBuffers(1, &m_TexCoordsVBO);
         }
     };
 }

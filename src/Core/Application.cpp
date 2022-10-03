@@ -36,7 +36,7 @@ namespace Caruti {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-//        glfwWindowHint(GLFW_SAMPLES, 16);
+        glfwWindowHint(GLFW_SAMPLES, 16);
 
         GLFWwindow *window = glfwCreateWindow(width, height, "CarutiGL", nullptr, nullptr);
         if (window == nullptr) {
